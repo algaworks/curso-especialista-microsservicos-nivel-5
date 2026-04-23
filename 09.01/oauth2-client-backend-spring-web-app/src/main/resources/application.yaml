@@ -1,0 +1,57 @@
+server:
+  port: 9080
+
+spring:
+  application:
+    name: oauth2-client-backend-spring-web-app
+  security:
+    oauth2:
+      client:
+        provider:
+          algashop-auth-server:
+            issuer-uri: http://algashop-authorization-server:8081
+            user-name-attribute: sub
+#            authorization-uri: http://algashop-authorization-server:8081/oauth2/authorize
+#            token-uri: http://algashop-authorization-server:8081/oauth2/token
+#            jwk-set-uri: http://algashop-authorization-server:8081/oauth2/jwks
+#            end_session_endpoint: http://algashop-authorization-server:8081/connect/logout
+        registration:
+          algashop-ecommerce-web:
+            provider: algashop-auth-server
+            client-id: algashop-ecommerce-web
+            client-secret: ecommerce123
+            client-name: AlgaShop Ecommerce
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_basic
+#            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - credit-cards:read
+              - credit-cards:write
+              - orders:read
+              - orders:write
+              - customers:read
+              - customers:write
+              - shopping-carts:read
+              - shopping-carts:write
+              - openid
+          algashop-ecommerce-m2m:
+            provider: algashop-auth-server
+            client-id: algashop-ecommerce-m2m
+            client-secret: m2m123
+            authorization-grant-type: client_credentials
+            client-authentication-method: client_secret_basic
+            scope:
+              - products:read
+              - categories:read
+              - customers:write
+
+logging:
+  level:
+    org.springframework.security: TRACE
+
+app:
+  products-api:
+    base-url: http://localhost:8083
+  security:
+    post-logout-redirect-uri: http://algashop-ecommerce:9080?logout-success
+

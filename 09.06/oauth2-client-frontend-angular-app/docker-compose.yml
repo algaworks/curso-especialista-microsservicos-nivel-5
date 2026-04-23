@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  oauth2-client-frontend-angular-app:
+    build:
+      context: .
+      dockerfile: development.Dockerfile
+    ports:
+      - "4200:80"
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
