@@ -1,0 +1,81 @@
+package com.algaworks.algashop.authorizationserver.infrastructure.security;
+
+import com.algaworks.algashop.authorizationserver.infrastructure.security.oidc.OidcUserInfoMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.authorization.oidc.web.authentication.OidcLogoutAuthenticationSuccessHandler;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class AuthorizationServerSecurityConfig {
+
+	private final OidcUserInfoMapper oidcUserInfoMapper;
+	private final OidcLogoutAuthenticationSuccessHandler oidcLogoutAuthenticationSuccessHandler;
+	private final AlgaShopSecurityProperties properties;
+
+	@Bean
+	@Order(1)
+	public SecurityFilterChain authorizationServerFilterChain(HttpSecurity http) {
+		var authorizationServer = new OAuth2AuthorizationServerConfigurer();
+
+		http.securityMatcher(authorizationServer.getEndpointsMatcher())
+				.cors(Customizer.withDefaults())
+				.headers(headers -> {
+					var csp = properties.getCsp();
+					headers.contentSecurityPolicy(c -> c.policyDirectives(csp.getPolicyDirectives()));
+				})
+				.with(authorizationServer, configurer ->
+						configurer.oidc(oidc -> oidc
+								.logoutEndpoint(logout ->
+										logout.logoutResponseHandler(oidcLogoutAuthenticationSuccessHandler))
+								.userInfoEndpoint(
+									userInfo -> userInfo.userInfoMapper(oidcUserInfoMapper))))
+				.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+				.exceptionHandling(
+						exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+								new LoginUrlAuthenticationEntryPoint("/login"),
+								new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+						)
+				);
+
+		return http.build();
+	}
+
+	@Bean
+	@Order(2)
+	public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) {
+		http.securityMatcher("/api/**")
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/actuator/health/**").permitAll()
+						.anyRequest().authenticated())
+				.csrf(csrf -> csrf.disable())
+				.cors(Customizer.withDefaults())
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+
+		return http.build();
+	}
+
+	@Bean
+	@Order(3)
+	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) {
+		http.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+				.formLogin(Customizer.withDefaults());
+		return http.build();
+	}
+
+}
