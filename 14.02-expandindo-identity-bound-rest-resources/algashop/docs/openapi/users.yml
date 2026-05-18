@@ -333,4 +333,4 @@ components:
           example: true
         type:
           type: string
-          example: 'ADMIN'
+          example: 'MANAGER'
