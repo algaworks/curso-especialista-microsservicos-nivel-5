@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ordering_test
+    username: postgres
+    password: postgres
+    hikari:
+        minimum-idle: 1
+        maximum-pool-size: 10
+        connection-timeout: 3000
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration,classpath:db/clean
+    user: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/ordering_test
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${algashop.integrations.authorization-server.url}
+      client:
+        provider:
+          algashop-as:
+            token-uri: ${algashop.integrations.authorization-server.url}/oauth2/token
+        registration:
+          algashop-ordering-service-client:
+            provider: algashop-as
+            client-id: algashop-ordering-service
+            client-secret: secret123
+            authorization-grant-type: client_credentials
+            client-authentication-method: client_secret_basic
+            scope: products:read
+
+algashop:
+  integrations:
+    authorization-server.url: http://auth.algashop.local:8081
+    shipping.provider: FAKE
+    rapidex.url: http://localhost:8780
+    product-catalog:
+      url: http://localhost:8781
+      oauth2-client-registration-id: algashop-ordering-service-client
