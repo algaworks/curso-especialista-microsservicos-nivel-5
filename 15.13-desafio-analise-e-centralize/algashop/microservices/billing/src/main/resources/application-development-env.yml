@@ -1,0 +1,40 @@
+server.port: 8082
+
+spring:
+  config:
+    import:
+      - aws-secretsmanager:/secret/algashop/billing/database?prefix=billing.secrets.datasource.
+      - aws-secretsmanager:/secret/algashop/billing/fastpay-token?prefix=billing.secrets.
+      - aws-parameterstore:/config/algashop/billing?prefix=billing.params
+      - aws-parameterstore:/config/algashop/shared?prefix=shared.params
+  cloud:
+    aws:
+      region:
+        static: us-east-1
+      endpoint: http://algashop-localstack:4566
+  datasource:
+    url: ${billing.params.datasource.url}
+    username: ${billing.secrets.datasource.username}
+    password: ${billing.secrets.datasource.password}
+  jpa:
+    show-sql: ${billing.params.jpa.show-sql}
+  flyway:
+    enabled: true
+    locations: classpath:db/migration,classpath:db/testdata
+    user: ${billing.secrets.datasource.username}
+    password: ${billing.secrets.datasource.password}
+    url: ${billing.params.datasource.url}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${shared.params.auth-server-url}
+
+algashop:
+  integrations:
+    payment:
+      provider: FASTPAY
+      fastpay:
+        hostname: ${billing.params.fastpay.hostname}
+        private-token: ${billing.secrets.fastpay-token}
+        webhook-url: ${billing.params.fastpay.webhook-url}

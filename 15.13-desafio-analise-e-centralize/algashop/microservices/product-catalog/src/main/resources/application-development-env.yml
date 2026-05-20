@@ -1,0 +1,51 @@
+spring:
+  config:
+    import:
+      - aws-secretsmanager:/secret/algashop/product-catalog/aws-s3?prefix=catalog.secrets.
+      - aws-secretsmanager:/secret/algashop/product-catalog/redis-password?prefix=catalog.secrets.
+      - aws-parameterstore:/config/algashop/product-catalog?prefix=catalog.params
+      - aws-parameterstore:/config/algashop/shared?prefix=shared.params
+  cloud:
+    aws:
+      region:
+        static: us-east-1
+      endpoint: http://algashop-localstack:4566
+      credentials:
+        access-key: ${catalog.secrets.access-key}
+        secret-key: ${catalog.secrets.secret-key}
+      s3:
+        enabled: true
+        path-style-access-enabled: true
+  cache:
+    type: redis
+  mongodb:
+    uri: ${catalog.params.mongodb.uri}
+  data:
+    redis:
+      host: ${catalog.params.redis.host}
+      port: ${catalog.params.redis.port}
+      password: ${catalog.secrets.redis-password}
+      database: ${catalog.params.redis.database}
+      timeout: ${catalog.params.redis.timeout}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${shared.params.auth-server-url}
+
+logging:
+  level:
+    org.mongodb.driver.protocol.command: DEBUG
+#    org.mongodb.driver.protocol.query: DEBUG
+#    org.mongodb.driver.connection: DEBUG
+    org.mongodb.driver.cluster: OFF
+
+algashop:
+  data-load:
+    enabled: true
+    auto-delete: true
+  mapping:
+    image-storage-url: ${catalog.params.storage.image-storage-url}
+  storage:
+    s3:
+      bucket-name: ${catalog.params.storage.bucket-name}
