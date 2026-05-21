@@ -6,12 +6,12 @@ spring:
       - aws-parameterstore:/config/algashop/shared?prefix=shared.params
   cloud:
     aws:
-      region:
-        static: us-east-1
-      endpoint: http://algashop-localstack:4566
       credentials:
         access-key: test
         secret-key: test
+      region:
+        static: us-east-1
+      endpoint: http://algashop-localstack:4566
       s3:
         enabled: true
         path-style-access-enabled: true
