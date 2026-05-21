@@ -1,7 +1,6 @@
 spring:
   config:
     import:
-      - aws-secretsmanager:/secret/algashop/product-catalog/aws-s3?prefix=catalog.secrets.
       - aws-secretsmanager:/secret/algashop/product-catalog/redis-password?prefix=catalog.secrets.
       - aws-parameterstore:/config/algashop/product-catalog?prefix=catalog.params
       - aws-parameterstore:/config/algashop/shared?prefix=shared.params
@@ -11,7 +10,7 @@ spring:
         static: us-east-1
       endpoint: http://algashop-localstack:4566
       credentials:
-        access-key: LSIAQAAAAAAVNCBMPNSG
+        access-key: test
         secret-key: test
       s3:
         enabled: true
