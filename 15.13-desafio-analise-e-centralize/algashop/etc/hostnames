@@ -10,6 +10,7 @@
 
 127.0.0.1 algashop-ecommerce
 127.0.0.1 algashop-admin
+127.0.0.1 algashop-mailpit
 
 127.0.0.1 algashop.local
 127.0.0.1 admin.algashop.local
