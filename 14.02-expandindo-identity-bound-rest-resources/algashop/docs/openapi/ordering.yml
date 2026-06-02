@@ -208,6 +208,19 @@ paths:
                 $ref: "#/components/schemas/ShoppingCart"
         404:
           $ref: "#/components/responses/NotFound"
+    post:
+      tags:
+        - My Shopping Cart
+      description: Create a Shopping Cart for the authenticated customer (if not exists)
+      responses:
+        201:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShoppingCart"
+        404:
+          $ref: "#/components/responses/NotFound"
 
   /api/v1/customers/me/shopping-cart/items:
     get:
